@@ -1,0 +1,240 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  overflow: hidden;
+  height: 100vh;
+}
+
+#root {
+  height: 100vh;
+}
+
+.error-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 1rem;
+  text-align: center;
+  padding: 2rem;
+}
+.error-screen h2 { color: #f87171; }
+.error-screen code { background: #333; padding: 0.2rem 0.4rem; border-radius: 4px; }
+
+.app {
+  display: flex;
+  height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  min-width: 200px;
+  background: #16213e;
+  border-right: 1px solid #0f3460;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #0f3460;
+  font-weight: bold;
+  color: #e94560;
+}
+
+.sidebar-header button {
+  background: #e94560;
+  color: #fff;
+  border: none;
+  padding: 0.3rem 0.7rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+}
+.sidebar-header button:hover { background: #c23152; }
+
+.session-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.session-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #1a1a3e;
+}
+.session-item:hover { background: #1a1a3e; }
+.session-item.active { background: #0f3460; }
+
+.session-indicator {
+  color: #e94560;
+  font-size: 0.8rem;
+}
+
+.session-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+.session-actions {
+  display: none;
+  gap: 0.25rem;
+}
+.session-item:hover .session-actions { display: flex; }
+
+.session-actions button {
+  background: none;
+  border: 1px solid #444;
+  color: #888;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.session-actions button:hover { color: #e94560; border-color: #e94560; }
+
+.session-empty {
+  padding: 1rem;
+  color: #666;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* Main area */
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Chat window */
+.chat-window {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.chat-empty {
+  color: #555;
+  text-align: center;
+  margin-top: 4rem;
+  font-size: 0.9rem;
+}
+
+.chat-message {
+  margin-bottom: 0.3rem;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+.chat-time {
+  color: #555;
+  margin-right: 0.5rem;
+  font-size: 0.78rem;
+}
+
+.chat-role {
+  font-weight: bold;
+  margin-right: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.chat-message.user .chat-role { color: #60a5fa; }
+.chat-message.assistant .chat-role { color: #34d399; }
+.chat-message.system .chat-role { color: #fbbf24; }
+
+.chat-text {
+  white-space: pre-wrap;
+}
+
+.cursor-blink {
+  animation: blink 0.7s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Message input */
+.message-input {
+  display: flex;
+  padding: 0.5rem 1rem;
+  border-top: 1px solid #0f3460;
+  background: #16213e;
+}
+
+.message-input input {
+  flex: 1;
+  background: #1a1a2e;
+  border: 1px solid #0f3460;
+  color: #e0e0e0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+}
+.message-input input:focus { border-color: #e94560; }
+.message-input input:disabled { opacity: 0.4; }
+
+.message-input button {
+  margin-left: 0.5rem;
+  background: #e94560;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+.message-input button:hover { background: #c23152; }
+.message-input button:disabled { opacity: 0.4; cursor: default; }
+
+/* Status bar */
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 1rem;
+  font-size: 0.75rem;
+  border-top: 1px solid #0f3460;
+}
+.status-bar.connected { color: #34d399; }
+.status-bar.disconnected { color: #f87171; }
+
+.status-dot {
+  font-size: 0.6rem;
+}
+
+.status-state {
+  color: #fbbf24;
+}
+
+.status-shortcuts {
+  margin-left: auto;
+  color: #555;
+  font-size: 0.7rem;
+}
