@@ -1,0 +1,7 @@
+tunnel: openssh-tunnel
+credentials-file: /home/damar/.cloudflared/openssh-tunnel.json
+
+ingress:
+  - hostname: openssh.tokopawon.id
+    service: ssh://localhost:22
+  - service: http_status:404

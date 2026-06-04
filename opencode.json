@@ -1,0 +1,55 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "openclaw-docs": {
+      "type": "local",
+      "command": [
+        "/home/damar/projects/openclaw-docs-mcp-go/openclaw-docs-mcp"
+      ],
+      "enabled": true,
+      "environment": {
+        "LLM_DOCS_PATH": "/home/damar/projects/openclaw-docs-mcp-go/docs/llms-full.txt"
+      }
+    }
+  },
+  "agent": {
+    "ask": {
+      "mode": "primary",
+      "description": "Mode ask — analisis & plan tanpa mengubah file. Semua write/edit/bash butuh konfirmasi.",
+      "permission": {
+        "edit": "ask",
+        "bash": "ask",
+        "task": "ask",
+        "webfetch": "ask",
+        "external_directory": "ask"
+      }
+    },
+    "build": {
+      "mode": "primary",
+      "description": "Development dengan akses penuh — default mode",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow",
+        "task": "allow",
+        "webfetch": "allow"
+      }
+    }
+  },
+  "permission": {
+    "bash": {
+      "*": "ask",
+      "go build *": "allow",
+      "go vet *": "allow",
+      "npm run *": "allow",
+      "npm test": "allow",
+      "tsc *": "allow",
+      "tsx *": "allow",
+      "ls *": "allow",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git log*": "allow"
+    }
+  },
+  "formatter": true,
+  "autoupdate": false
+}

@@ -1,0 +1,7 @@
+tunnel: openclaw-dashboard
+credentials-file: /home/damar/.cloudflared/openclaw-dashboard.json
+
+ingress:
+  - hostname: openclawdashboard.tokopawon.id
+    service: http://localhost:3000
+  - service: http_status:404
