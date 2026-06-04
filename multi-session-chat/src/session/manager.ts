@@ -1,6 +1,6 @@
 import { GatewayClient } from "../client/gateway-client.js";
 import { SessionStore } from "./store.js";
-import { SessionRow, ChatMessage } from "../types/protocol.js";
+import { ChatMessage, ChatContentBlock, SessionRow, ChatDeltaPayload } from "../types/protocol.js";
 
 export interface ChatEntry {
   role: "user" | "assistant" | "system";
@@ -14,6 +14,31 @@ export interface ManagedSession {
   label: string;
   messages: ChatEntry[];
   status: "idle" | "thinking" | "streaming" | "completed" | "error";
+}
+
+function extractText(message: ChatMessage): string {
+  if (typeof message.content === "string") return message.content;
+  if (Array.isArray(message.content)) {
+    const textBlocks = message.content
+      .filter((b: ChatContentBlock) => b.type === "text" && typeof b.text === "string")
+      .map((b: ChatContentBlock) => b.text!)
+      .join("");
+    if (textBlocks) return textBlocks;
+  }
+  if (typeof message.text === "string") return message.text;
+  if (typeof message.message === "string") return message.message;
+  if (typeof message.deltaText === "string") return message.deltaText;
+  return "";
+}
+
+function formatTimestamp(ts?: number | string): string {
+  if (!ts) return new Date().toISOString().slice(11, 19);
+  const t = typeof ts === "number" ? ts : new Date(ts).getTime();
+  return new Date(t).toISOString().slice(11, 19);
+}
+
+function labelFromRow(row: SessionRow): string {
+  return row.label || row.displayName || row.key;
 }
 
 export class SessionManager {
@@ -31,10 +56,14 @@ export class SessionManager {
 
   private setupEventHandlers(): void {
     this.client.on("chat", (payload: unknown) => {
-      const p = payload as { deltaText?: string; message?: string; replace?: boolean };
+      const p = payload as ChatDeltaPayload;
       if (!this.activeSessionKey) return;
       const session = this.sessions.get(this.activeSessionKey);
       if (!session) return;
+
+      const msgContent = typeof p.message === "object" && p.message
+        ? extractText(p.message as ChatMessage)
+        : (typeof p.message === "string" ? p.message : "");
 
       if (p.replace) {
         this.streamingBuffer = p.deltaText || "";
@@ -42,16 +71,16 @@ export class SessionManager {
         this.streamingBuffer += p.deltaText;
       }
 
-      if (p.message) {
+      if (msgContent) {
         const last = session.messages[session.messages.length - 1];
         if (last?.isStreaming) {
-          last.text = p.message;
+          last.text = msgContent;
           last.isStreaming = false;
         } else {
           session.messages.push({
             role: "assistant",
-            text: p.message,
-            timestamp: new Date().toISOString(),
+            text: msgContent,
+            timestamp: p.message ? formatTimestamp((p.message as ChatMessage).timestamp) : formatTimestamp(),
           });
         }
         this.streamingBuffer = "";
@@ -63,7 +92,7 @@ export class SessionManager {
           session.messages.push({
             role: "assistant",
             text: this.streamingBuffer,
-            timestamp: new Date().toISOString(),
+            timestamp: formatTimestamp(),
             isStreaming: true,
           });
         }
@@ -78,10 +107,13 @@ export class SessionManager {
       const session = this.sessions.get(sk);
       if (!session) return;
 
+      const text = extractText(p.message);
+      if (!text && p.message.role === "assistant") return; // skip empty assistant messages
+
       const entry: ChatEntry = {
         role: p.message.role,
-        text: p.message.text,
-        timestamp: p.message.createdAt,
+        text: text || "(non-text content)",
+        timestamp: formatTimestamp(p.message.timestamp),
       };
 
       if (entry.role === "assistant") {
@@ -145,12 +177,13 @@ export class SessionManager {
     try {
       const remote = await this.client.listSessions();
       for (const row of remote) {
-        const label = row.label || row.sessionKey;
-        if (!this.sessions.has(row.sessionKey)) {
-          this.store.upsertSession(row.sessionKey, label);
+        const key = row.key;
+        const label = labelFromRow(row);
+        if (!this.sessions.has(key)) {
+          this.store.upsertSession(key, label);
         }
-        this.sessions.set(row.sessionKey, {
-          sessionKey: row.sessionKey,
+        this.sessions.set(key, {
+          sessionKey: key,
           label,
           messages: [],
           status: "idle",
@@ -215,11 +248,13 @@ export class SessionManager {
 
     try {
       const messages = await this.client.getHistory(sessionKey);
-      session.messages = messages.map((m) => ({
-        role: m.role,
-        text: m.text,
-        timestamp: m.createdAt,
-      }));
+      session.messages = messages
+        .filter((m) => m.role === "user" || m.role === "assistant")
+        .map((m) => ({
+          role: m.role,
+          text: extractText(m),
+          timestamp: formatTimestamp(m.timestamp),
+        }));
     } catch {
       // keep existing messages
     }
@@ -232,7 +267,7 @@ export class SessionManager {
     session.messages.push({
       role: "user",
       text,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString().slice(11, 19),
     });
     session.status = "thinking";
 

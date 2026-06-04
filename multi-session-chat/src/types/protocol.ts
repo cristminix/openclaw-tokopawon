@@ -51,25 +51,42 @@ export interface HelloOk {
 }
 
 export interface SessionRow {
-  sessionKey: string;
+  key: string;
   label?: string;
-  agentId?: string;
+  displayName?: string;
+  kind?: string;
+  sessionId?: string;
   status?: string;
-  createdAt?: string;
   updatedAt?: string;
 }
 
-export interface ChatMessage {
-  messageId: string;
-  role: "user" | "assistant" | "system";
-  text: string;
-  createdAt: string;
+export interface ChatContentBlock {
+  type: string;
+  text?: string;
+  thinking?: string;
 }
 
-export interface ChatDelta {
+export interface ChatMessage {
+  messageId?: string;
+  role: "user" | "assistant" | "system";
+  content?: ChatContentBlock[] | string;
+  text?: string;
+  timestamp?: number;
+  createdAt?: string;
   deltaText?: string;
   message?: string;
   replace?: boolean;
+  __openclaw?: { id: string; seq: number };
+}
+
+export interface ChatDeltaPayload {
+  deltaText?: string;
+  message?: ChatMessage | string;
+  replace?: boolean;
+  runId?: string;
+  sessionKey?: string;
+  seq?: number;
+  state?: string;
 }
 
 export interface SessionOperation {
