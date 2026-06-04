@@ -239,12 +239,49 @@ export default function App() {
   }, [sessions, activeKey, handleNew, updateSession]);
 
   if (error) {
+    const isPairing = error.includes("pairing") || error.includes("not approved");
+    const isTimeout = error.includes("timeout") || error.includes("Timeout");
+
     return (
       <div className="error-screen">
         <h2>Connection Error</h2>
-        <p>{error}</p>
-        <p>Check VITE_WS_URL and VITE_TOKEN in .env</p>
-        <p>First-time setup: connect via localhost for auto-approval</p>
+        <p className="error-msg">{error}</p>
+
+        {isPairing && (
+          <div className="help-box">
+            <h3>Device Pairing Required</h3>
+            <p>Device identity Anda belum di-approve oleh gateway.</p>
+            <ol>
+              <li>Buka terminal di server OpenClaw</li>
+              <li>Jalankan: <code>openclaw devices list</code></li>
+              <li>Cari requestId yang statusnya "new pairing"</li>
+              <li>Jalankan: <code>openclaw devices approve &lt;requestId&gt;</code></li>
+            </ol>
+            <p className="help-alt">
+              Alternatif: connect via <code>ws://127.0.0.1:18789</code> dulu
+              (loopback auto-approve), lalu refresh halaman ini.
+            </p>
+          </div>
+        )}
+
+        {isTimeout && (
+          <div className="help-box">
+            <h3>Connection Timeout</h3>
+            <p>Pastikan gateway OpenClaw sedang berjalan dan URL benar.</p>
+            <p>Cek: <code>openclaw gateway status</code></p>
+          </div>
+        )}
+
+        {!isPairing && !isTimeout && (
+          <div className="help-box">
+            <p>Periksa <code>VITE_WS_URL</code> dan <code>VITE_TOKEN</code> di <code>.env</code></p>
+            <p>Pastikan gateway OpenClaw berjalan: <code>openclaw gateway status</code></p>
+          </div>
+        )}
+
+        <button className="retry-btn" onClick={() => window.location.reload()}>
+          Retry Connection
+        </button>
       </div>
     );
   }

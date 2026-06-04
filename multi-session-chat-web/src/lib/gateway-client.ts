@@ -1,4 +1,5 @@
 import type { SessionRow } from "./types";
+import { signPayload } from "./identity";
 
 type ReqEntry = { resolve: (v: unknown) => void; reject: (e: Error) => void };
 type EventHandler = (payload: unknown) => void;
@@ -9,7 +10,7 @@ const REQUEST_TIMEOUT_MS = 30_000;
 export interface Identity {
   deviceId: string;
   publicKeyBase64url: string;
-  privateKey: CryptoKey;
+  privateKey: Uint8Array;
   deviceToken?: string;
 }
 
@@ -133,15 +134,7 @@ export class GatewayClient {
         nonce,
       ].join("|");
 
-      const enc = new TextEncoder();
-      const sigBytes = await crypto.subtle.sign(
-        { name: "Ed25519" },
-        this.identity.privateKey,
-        enc.encode(payload)
-      );
-      const sigArr = new Uint8Array(sigBytes);
-      const signature = btoa(String.fromCharCode(...sigArr))
-        .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+      const signature = await signPayload(this.identity.privateKey, payload);
 
       params.device = {
         id: this.identity.deviceId,

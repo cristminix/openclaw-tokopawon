@@ -28,6 +28,33 @@ body {
 }
 .error-screen h2 { color: #f87171; }
 .error-screen code { background: #333; padding: 0.2rem 0.4rem; border-radius: 4px; }
+.error-msg { color: #fbbf24; margin-bottom: 1rem; }
+
+.help-box {
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  max-width: 520px;
+  text-align: left;
+  margin-bottom: 1rem;
+}
+.help-box h3 { color: #e94560; margin-bottom: 0.5rem; }
+.help-box ol { margin: 0.5rem 0; padding-left: 1.5rem; line-height: 1.8; }
+.help-box li { margin: 0.25rem 0; }
+.help-alt { margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid #0f3460; color: #888; font-size: 0.85rem; }
+
+.retry-btn {
+  background: #e94560;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+.retry-btn:hover { background: #c23152; }
 
 .app {
   display: flex;
